@@ -35,10 +35,12 @@
   },
   "homepage": "https://github.com/hobbyquaker/lgtv2mqtt",
   "dependencies": {
-    "lgtv2": "^1.4.1",
-    "mqtt": "^2.18.0",
-    "yalm": "^4.1.0",
-    "yargs": "^11.0.0"
+    "homeautomation-js-lib": "git://github.com/terafin/homeautomation-js-lib.git",
+    "lgtv2": "latest",
+    "mqtt": "latest",
+    "lodash": "latest",
+    "yalm": "latest",
+    "yargs": "latest"
   },
   "xo": {
     "space": 4
