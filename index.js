@@ -8,6 +8,8 @@ const pkg = require('./package.json')
 const _ = require('lodash')
 const logging = require('homeautomation-js-lib/logging.js')
 
+
+let tvOn
 let mqttConnected
 let tvConnected
 let lastError
@@ -51,9 +53,9 @@ mqtt.on('error', err => {
 	logging.error('mqtt', err)
 })
 
-mqtt.on('message', (inTopic, payload) => {
+mqtt.on('message', (inTopic, inPayload) => {
 	var topic = inTopic
-	payload = String(payload)
+	var payload = String(inPayload)
 	try {
 		payload = JSON.parse(payload)
 	} catch (err) {
@@ -90,29 +92,20 @@ mqtt.on('message', (inTopic, payload) => {
 			lgtv.request('ssap://system.launcher/launch', {id: String(payload)})
 			break
 
-		case 'youtube':
-			lgtv.request('ssap://system.launcher/launch', {id: 'youtube.leanback.v4', contentId: String(payload)})
+		case 'powerOn':
+			logging.info('powerOn (isOn? ' + tvOn + ')')
+			if ( !tvOn ) { 
+				logging.info('lg > ssap://system/turnOff')
+				lgtv.request('ssap://system/turnOff', null, null) 
+			}
 			break
 
-		case 'move':
-		case 'drag':
-			// The event type is 'move' for both moves and drags.
-			sendPointerEvent('move', {
-				dx: payload.dx,
-				dy: payload.dy,
-				drag: parts[2] === 'drag' ? 1 : 0
-			})
-			break
-
-		case 'scroll':
-			sendPointerEvent('scroll', {
-				dx: payload.dx,
-				dy: payload.dy
-			})
-			break
-
-		case 'click':
-			sendPointerEvent('click')
+		case 'powerOff':
+			logging.info('powerOff (isOn? ' + tvOn + ')')
+			if ( tvOn ) { 
+				logging.info('lg > ssap://system/turnOff')
+				lgtv.request('ssap://system/turnOff', null, null) 
+			}
 			break
 
 		case 'button':
@@ -128,7 +121,8 @@ mqtt.on('message', (inTopic, payload) => {
 			break
 
 		default:
-			lgtv.request('ssap://' + topic.replace(topic_prefix + '/set/', ''), payload || null)
+			logging.info('lg > ' + 'ssap://' + inPayload)
+			lgtv.request('ssap://' + inPayload, null, null)
 		}
 		break
 	default:
@@ -147,7 +141,7 @@ lgtv.on('connect', () => {
 	mqtt.publish(topic_prefix + '/connected', '2', {retain: true})
 
 	lgtv.subscribe('ssap://audio/getVolume', (err, res) => {
-		logging.debug('audio/getVolume', err, res)
+		logging.info('audio/getVolume', err, res)
 		if (res.changed.indexOf('volume') !== -1) {
 			mqtt.publish(topic_prefix + '/status/volume', String(res.volume), {retain: true})
 		}
@@ -157,8 +151,14 @@ lgtv.on('connect', () => {
 	})
 
 	lgtv.subscribe('ssap://com.webos.applicationManager/getForegroundAppInfo', (err, res) => {
-		logging.debug('getForegroundAppInfo', err, res)
+		logging.info('getForegroundAppInfo', err, res)
 		mqtt.publish(topic_prefix + '/status/foregroundApp', String(res.appId), {retain: true})
+
+		if ( !_.isNil(res.appId) && res.appId.length > 0) {
+			tvOn = true
+		} else {
+			tvOn = false
+		}
 
 		if (res.appId === 'com.webos.app.livetv') {
 			if (!channelsSubscribed) {
@@ -180,11 +180,9 @@ lgtv.on('connect', () => {
 		}
 	})
 
-	/*
-    lgtv.subscribe('ssap://tv/getExternalInputList', function (err, res) {
-        console.log('getExternalInputList', err, res);
-    });
-    */
+	lgtv.subscribe('ssap://tv/getExternalInputList', function(err, res) {
+		logging.info('getExternalInputList', err, res)
+	})
 })
 
 lgtv.on('connecting', host => {
