@@ -3,25 +3,26 @@
 const log = require('yalm')
 const Mqtt = require('mqtt')
 const Lgtv = require('lgtv2')
-const config = require('./config.js')
+var config = require('./config.js')
 const pkg = require('./package.json')
+const _ = require('lodash')
 
 let mqttConnected
 let tvConnected
 let lastError
+
+require('homeautomation-js-lib/mqtt_helpers.js')
+const tvIP = process.env.TV_IP
+if ( !_.isNil(tvIP) ) { 
+	config.tv = tvIP 
+}
 
 log.setLevel(config.verbosity)
 
 log.info(pkg.name + ' ' + pkg.version + ' starting')
 log.info('mqtt trying to connect', config.url)
 
-const mqtt = Mqtt.connect(config.url, {will: {topic: config.name + '/connected', payload: '0', retain: true}})
-
-const lgtv = new Lgtv({
-	url: 'ws://' + config.tv + ':3000'
-})
-
-mqtt.on('connect', () => {
+const mqtt = Mqtt.setupClient(function() {
 	mqttConnected = true
 
 	log.info('mqtt connected', config.url)
@@ -29,13 +30,15 @@ mqtt.on('connect', () => {
 
 	log.info('mqtt subscribe', config.name + '/set/#')
 	mqtt.subscribe(config.name + '/set/#')
-})
-
-mqtt.on('close', () => {
+}, function() {
 	if (mqttConnected) {
 		mqttConnected = false
 		log.info('mqtt closed ' + config.url)
 	}
+})
+
+const lgtv = new Lgtv({
+	url: 'ws://' + config.tv + ':3000'
 })
 
 mqtt.on('error', err => {
