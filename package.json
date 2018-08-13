@@ -10,6 +10,7 @@
   },
   "engineStrict": true,
   "scripts": {
+    "start": "node index.js",
     "test": "camo-purge ; xo"
   },
   "repository": {
