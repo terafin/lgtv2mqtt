@@ -88,6 +88,12 @@ mqtt.on('message', (inTopic, inPayload) => {
 			}
 			lgtv.request('ssap://audio/setMute', {mute: Boolean(payload)})
 			break
+            
+		case 'input':
+			logging.info('lg > ssap://tv/switchInput', {inputId: String(payload)})
+			lgtv.request('ssap://tv/switchInput', {inputId: String(payload)})
+			break
+
 		case 'launch':
 			lgtv.request('ssap://system.launcher/launch', {id: String(payload)})
 			break
