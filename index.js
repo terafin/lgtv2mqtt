@@ -6,6 +6,7 @@ const Lgtv = require('lgtv2')
 var config = require('./config.js')
 const pkg = require('./package.json')
 const _ = require('lodash')
+const logging = require('homeautomation-js-lib/logging.js')
 
 let mqttConnected
 let tvConnected
@@ -16,24 +17,29 @@ const tvIP = process.env.TV_IP
 if ( !_.isNil(tvIP) ) { 
 	config.tv = tvIP 
 }
+var topic_prefix = process.env.TOPIC_PREFIX
 
-log.setLevel(config.verbosity)
+if (_.isNil(topic_prefix)) {
+	logging.warn('TOPIC_PREFIX not set, not starting')
+	process.abort()
+}
 
-log.info(pkg.name + ' ' + pkg.version + ' starting')
-log.info('mqtt trying to connect', config.url)
+
+logging.info(pkg.name + ' ' + pkg.version + ' starting')
+logging.info('mqtt trying to connect', config.url)
 
 const mqtt = Mqtt.setupClient(function() {
 	mqttConnected = true
 
-	log.info('mqtt connected', config.url)
-	mqtt.publish(config.name + '/connected', tvConnected ? '2' : '1', {retain: true})
+	logging.info('mqtt connected', config.url)
+	mqtt.publish(topic_prefix + '/connected', tvConnected ? '2' : '1', {retain: true})
 
-	log.info('mqtt subscribe', config.name + '/set/#')
-	mqtt.subscribe(config.name + '/set/#')
+	logging.info('mqtt subscribe', topic_prefix + '/set/#')
+	mqtt.subscribe(topic_prefix + '/set/#')
 }, function() {
 	if (mqttConnected) {
 		mqttConnected = false
-		log.info('mqtt closed ' + config.url)
+		logging.info('mqtt closed ' + config.url)
 	}
 })
 
@@ -42,19 +48,24 @@ const lgtv = new Lgtv({
 })
 
 mqtt.on('error', err => {
-	log.error('mqtt', err)
+	logging.error('mqtt', err)
 })
 
-mqtt.on('message', (topic, payload) => {
+mqtt.on('message', (inTopic, payload) => {
+	var topic = inTopic
 	payload = String(payload)
 	try {
 		payload = JSON.parse(payload)
 	} catch (err) {
-		log.error('error on mqtt message JSON parsing: ' + err)
+		logging.error('error on mqtt message JSON parsing: ' + err)
 	}
 
-	log.debug('mqtt <', topic, payload)
+	logging.debug('mqtt <', topic, payload)
 
+	if (topic[0] == '/') { 
+		topic = topic.substring(1)
+	}
+      
 	const parts = topic.split('/')
 
 	switch (parts[1]) {
@@ -117,7 +128,7 @@ mqtt.on('message', (topic, payload) => {
 			break
 
 		default:
-			lgtv.request('ssap://' + topic.replace(config.name + '/set/', ''), payload || null)
+			lgtv.request('ssap://' + topic.replace(topic_prefix + '/set/', ''), payload || null)
 		}
 		break
 	default:
@@ -125,29 +136,29 @@ mqtt.on('message', (topic, payload) => {
 })
 
 lgtv.on('prompt', () => {
-	log.info('authorization required')
+	logging.info('authorization required')
 })
 
 lgtv.on('connect', () => {
 	let channelsSubscribed = false
 	lastError = null
 	tvConnected = true
-	log.info('tv connected')
-	mqtt.publish(config.name + '/connected', '2', {retain: true})
+	logging.info('tv connected')
+	mqtt.publish(topic_prefix + '/connected', '2', {retain: true})
 
 	lgtv.subscribe('ssap://audio/getVolume', (err, res) => {
-		log.debug('audio/getVolume', err, res)
+		logging.debug('audio/getVolume', err, res)
 		if (res.changed.indexOf('volume') !== -1) {
-			mqtt.publish(config.name + '/status/volume', String(res.volume), {retain: true})
+			mqtt.publish(topic_prefix + '/status/volume', String(res.volume), {retain: true})
 		}
 		if (res.changed.indexOf('muted') !== -1) {
-			mqtt.publish(config.name + '/status/mute', res.muted ? '1' : '0', {retain: true})
+			mqtt.publish(topic_prefix + '/status/mute', res.muted ? '1' : '0', {retain: true})
 		}
 	})
 
 	lgtv.subscribe('ssap://com.webos.applicationManager/getForegroundAppInfo', (err, res) => {
-		log.debug('getForegroundAppInfo', err, res)
-		mqtt.publish(config.name + '/status/foregroundApp', String(res.appId), {retain: true})
+		logging.debug('getForegroundAppInfo', err, res)
+		mqtt.publish(topic_prefix + '/status/foregroundApp', String(res.appId), {retain: true})
 
 		if (res.appId === 'com.webos.app.livetv') {
 			if (!channelsSubscribed) {
@@ -155,14 +166,14 @@ lgtv.on('connect', () => {
 				setTimeout(() => {
 					lgtv.subscribe('ssap://tv/getCurrentChannel', (err, res) => {
 						if (err) {
-							log.error(err)
+							logging.error(err)
 							return
 						}
 						const msg = {
 							val: res.channelNumber,
 							lgtv: res
 						}
-						mqtt.publish(config.name + '/status/currentChannel', JSON.stringify(msg), {retain: true})
+						mqtt.publish(topic_prefix + '/status/currentChannel', JSON.stringify(msg), {retain: true})
 					})
 				}, 2500)
 			}
@@ -177,20 +188,20 @@ lgtv.on('connect', () => {
 })
 
 lgtv.on('connecting', host => {
-	log.debug('tv trying to connect', host)
+	logging.debug('tv trying to connect', host)
 })
 
 lgtv.on('close', () => {
 	lastError = null
 	tvConnected = false
-	log.info('tv disconnected')
-	mqtt.publish(config.name + '/connected', '1', {retain: true})
+	logging.info('tv disconnected')
+	mqtt.publish(topic_prefix + '/connected', '1', {retain: true})
 })
 
 lgtv.on('error', err => {
 	const str = String(err)
 	if (str !== lastError) {
-		log.error('tv', str)
+		logging.error('tv', str)
 	}
 	lastError = str
 })
