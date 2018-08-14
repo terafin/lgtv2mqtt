@@ -46,7 +46,8 @@ const mqtt = Mqtt.setupClient(function() {
 })
 
 const lgtv = new Lgtv({
-	url: 'ws://' + config.tv + ':3000'
+	url: 'ws://' + config.tv + ':3000',
+	reconnect: 5000
 })
 
 mqtt.on('error', err => {
@@ -199,7 +200,7 @@ lgtv.on('close', () => {
 	lastError = null
 	tvConnected = false
 	logging.info('tv disconnected')
-	mqtt.publish(topic_prefix + '/connected', '1', {retain: true})
+	mqtt.publish(topic_prefix + '/connected', '0', {retain: true})
 })
 
 lgtv.on('error', err => {
