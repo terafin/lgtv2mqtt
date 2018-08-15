@@ -104,6 +104,7 @@ mqtt.on('message', (inTopic, inPayload) => {
 			if ( !tvOn ) { 
 				logging.info('lg > ssap://system/turnOff')
 				lgtv.request('ssap://system/turnOff', null, null) 
+				tvOn = true
 			}
 			break
 
@@ -112,6 +113,7 @@ mqtt.on('message', (inTopic, inPayload) => {
 			if ( tvOn ) { 
 				logging.info('lg > ssap://system/turnOff')
 				lgtv.request('ssap://system/turnOff', null, null) 
+				tvOn = false
 			}
 			break
 
