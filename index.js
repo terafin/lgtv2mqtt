@@ -156,6 +156,7 @@ lgtv.on('prompt', () => {
 })
 
 lgtv.on('connect', () => {
+	tvOn = true
 	let channelsSubscribed = false
 	lastError = null
 	tvConnected = true
