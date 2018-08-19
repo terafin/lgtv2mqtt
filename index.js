@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 
-const log = require('yalm')
 const Mqtt = require('mqtt')
 const Lgtv = require('lgtv2')
 var config = require('./config.js')
 const pkg = require('./package.json')
 const _ = require('lodash')
 const logging = require('homeautomation-js-lib/logging.js')
-
+const wol = require('wol')
 
 let tvOn
 let mqttConnected
@@ -15,6 +14,8 @@ let tvConnected
 let lastError
 
 require('homeautomation-js-lib/mqtt_helpers.js')
+
+const tvMAC = process.env.TV_MAC
 const tvIP = process.env.TV_IP
 if ( !_.isNil(tvIP) ) { 
 	config.tv = tvIP 
@@ -101,11 +102,16 @@ mqtt.on('message', (inTopic, inPayload) => {
 
 		case 'powerOn':
 			logging.info('powerOn (isOn? ' + tvOn + ')')
-			if ( !tvOn ) { 
-				logging.info('lg > ssap://system/turnOff')
-				lgtv.request('ssap://system/turnOff', null, null) 
+			wol.wake(tvMAC, function(err, res) {
+				logging.info('WOL: ' + res)
 				tvOn = true
-			}
+			})
+
+			// if ( !tvOn ) { 
+			// 	logging.info('lg > ssap://system/turnOff')
+			// 	lgtv.request('ssap://system/turnOff', null, null) 
+			// 	tvOn = true
+			// }
 			break
 
 		case 'powerOff':
