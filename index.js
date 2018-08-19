@@ -9,6 +9,7 @@ const logging = require('homeautomation-js-lib/logging.js')
 const wol = require('wol')
 
 let tvOn
+let requestedTVOn = null
 let mqttConnected
 let tvConnected
 let lastError
@@ -35,7 +36,7 @@ const mqtt = Mqtt.setupClient(function() {
 	mqttConnected = true
 
 	logging.info('mqtt connected', config.url)
-	mqtt.publish(topic_prefix + '/connected', tvConnected ? '2' : '1', {retain: true})
+	mqtt.publish(topic_prefix + '/connected', tvConnected ? '1' : '0', {retain: true})
 
 	logging.info('mqtt subscribe', topic_prefix + '/set/#')
 	mqtt.subscribe(topic_prefix + '/set/#')
@@ -45,6 +46,16 @@ const mqtt = Mqtt.setupClient(function() {
 		logging.info('mqtt closed ' + config.url)
 	}
 })
+
+const powerOff = function() {
+	logging.info('powerOff (isOn? ' + tvOn + ')')
+	if ( tvOn ) { 
+		logging.info('lg > ssap://system/turnOff')
+		lgtv.request('ssap://system/turnOff', null, null) 
+		tvOn = false
+		requestedTVOn = false
+	}
+}
 
 const lgtv = new Lgtv({
 	url: 'ws://' + config.tv + ':3000',
@@ -105,6 +116,7 @@ mqtt.on('message', (inTopic, inPayload) => {
 			wol.wake(tvMAC, function(err, res) {
 				logging.info('WOL: ' + res)
 				tvOn = true
+				requestedTVOn = true
 			})
 
 			// if ( !tvOn ) { 
@@ -115,12 +127,7 @@ mqtt.on('message', (inTopic, inPayload) => {
 			break
 
 		case 'powerOff':
-			logging.info('powerOff (isOn? ' + tvOn + ')')
-			if ( tvOn ) { 
-				logging.info('lg > ssap://system/turnOff')
-				lgtv.request('ssap://system/turnOff', null, null) 
-				tvOn = false
-			}
+			powerOff()
 			break
 
 		case 'button':
@@ -153,7 +160,7 @@ lgtv.on('connect', () => {
 	lastError = null
 	tvConnected = true
 	logging.info('tv connected')
-	mqtt.publish(topic_prefix + '/connected', '2', {retain: true})
+	mqtt.publish(topic_prefix + '/connected', '1', {retain: true})
 
 	lgtv.subscribe('ssap://audio/getVolume', (err, res) => {
 		logging.info('audio/getVolume', err, res)
@@ -198,6 +205,10 @@ lgtv.on('connect', () => {
 	lgtv.subscribe('ssap://tv/getExternalInputList', function(err, res) {
 		logging.info('getExternalInputList', err, res)
 	})
+
+	if ( requestedTVOn == false ) {
+		powerOff()
+	}
 })
 
 lgtv.on('connecting', host => {
