@@ -2,7 +2,6 @@
 
 const Mqtt = require('mqtt')
 const Lgtv = require('lgtv2')
-var config = require('./config.js')
 const pkg = require('./package.json')
 const _ = require('lodash')
 const logging = require('homeautomation-js-lib/logging.js')
@@ -18,9 +17,7 @@ require('homeautomation-js-lib/mqtt_helpers.js')
 
 const tvMAC = process.env.TV_MAC
 const tvIP = process.env.TV_IP
-if ( !_.isNil(tvIP) ) { 
-	config.tv = tvIP 
-}
+
 var topic_prefix = process.env.TOPIC_PREFIX
 
 if (_.isNil(topic_prefix)) {
@@ -30,12 +27,10 @@ if (_.isNil(topic_prefix)) {
 
 
 logging.info(pkg.name + ' ' + pkg.version + ' starting')
-logging.info('mqtt trying to connect', config.url)
 
 const mqtt = Mqtt.setupClient(function() {
 	mqttConnected = true
 
-	logging.info('mqtt connected', config.url)
 	mqtt.publish(topic_prefix + '/connected', tvConnected ? '1' : '0', {retain: true})
 
 	logging.info('mqtt subscribe', topic_prefix + '/set/#')
@@ -43,7 +38,7 @@ const mqtt = Mqtt.setupClient(function() {
 }, function() {
 	if (mqttConnected) {
 		mqttConnected = false
-		logging.info('mqtt closed ' + config.url)
+		logging.error('mqtt disconnected')
 	}
 })
 
@@ -58,7 +53,7 @@ const powerOff = function() {
 }
 
 const lgtv = new Lgtv({
-	url: 'ws://' + config.tv + ':3000',
+	url: 'ws://' + tvIP + ':3000',
 	reconnect: 5000
 })
 
@@ -84,54 +79,54 @@ mqtt.on('message', (inTopic, inPayload) => {
 	const parts = topic.split('/')
 
 	switch (parts[1]) {
-	case 'set':
-		switch (parts[2]) {
-		case 'toast':
-			lgtv.request('ssap://system.notifications/createToast', {message: String(payload)})
-			break
-		case 'volume':
-			lgtv.request('ssap://audio/setVolume', {volume: parseInt(payload, 10)} || 0)
-			break
-		case 'mute':
-			if (payload === 'true') {
-				payload = true
-			}
-			if (payload === 'false') {
-				payload = false
-			}
-			lgtv.request('ssap://audio/setMute', {mute: Boolean(payload)})
-			break
+		case 'set':
+			switch (parts[2]) {
+				case 'toast':
+					lgtv.request('ssap://system.notifications/createToast', {message: String(payload)})
+					break
+				case 'volume':
+					lgtv.request('ssap://audio/setVolume', {volume: parseInt(payload, 10)} || 0)
+					break
+				case 'mute':
+					if (payload === 'true') {
+						payload = true
+					}
+					if (payload === 'false') {
+						payload = false
+					}
+					lgtv.request('ssap://audio/setMute', {mute: Boolean(payload)})
+					break
             
-		case 'input':
-			logging.info('lg > ssap://tv/switchInput', {inputId: String(payload)})
-			lgtv.request('ssap://tv/switchInput', {inputId: String(payload)})
-			break
+				case 'input':
+					logging.info('lg > ssap://tv/switchInput', {inputId: String(payload)})
+					lgtv.request('ssap://tv/switchInput', {inputId: String(payload)})
+					break
 
-		case 'launch':
-			lgtv.request('ssap://system.launcher/launch', {id: String(payload)})
-			break
+				case 'launch':
+					lgtv.request('ssap://system.launcher/launch', {id: String(payload)})
+					break
 
-		case 'powerOn':
-			logging.info('powerOn (isOn? ' + tvOn + ')')
-			wol.wake(tvMAC, function(err, res) {
-				logging.info('WOL: ' + res)
-				tvOn = true
-				requestedTVOn = true
-			})
+				case 'powerOn':
+					logging.info('powerOn (isOn? ' + tvOn + ')')
+					wol.wake(tvMAC, function(err, res) {
+						logging.info('WOL: ' + res)
+						tvOn = true
+						requestedTVOn = true
+					})
 
-			// if ( !tvOn ) { 
-			// 	logging.info('lg > ssap://system/turnOff')
-			// 	lgtv.request('ssap://system/turnOff', null, null) 
-			// 	tvOn = true
-			// }
-			break
+					// if ( !tvOn ) { 
+					// 	logging.info('lg > ssap://system/turnOff')
+					// 	lgtv.request('ssap://system/turnOff', null, null) 
+					// 	tvOn = true
+					// }
+					break
 
-		case 'powerOff':
-			powerOff()
-			break
+				case 'powerOff':
+					powerOff()
+					break
 
-		case 'button':
-			/*
+				case 'button':
+					/*
                      * Buttons that are known to work:
                      *    MUTE, RED, GREEN, YELLOW, BLUE, HOME, MENU, VOLUMEUP, VOLUMEDOWN,
                      *    CC, BACK, UP, DOWN, LEFT, ENTER, DASH, 0-9, EXIT
@@ -139,15 +134,15 @@ mqtt.on('message', (inTopic, inPayload) => {
                      * Probably also (but I don't have the facility to test them):
                      *    CHANNELUP, CHANNELDOWN
                      */
-			sendPointerEvent('button', {name: (String(payload)).toUpperCase()})
-			break
+					sendPointerEvent('button', {name: (String(payload)).toUpperCase()})
+					break
 
+				default:
+					logging.info('lg > ' + 'ssap://' + inPayload)
+					lgtv.request('ssap://' + inPayload, null, null)
+			}
+			break
 		default:
-			logging.info('lg > ' + 'ssap://' + inPayload)
-			lgtv.request('ssap://' + inPayload, null, null)
-		}
-		break
-	default:
 	}
 })
 

@@ -15,7 +15,7 @@
                 "MQTT_HOST": "mqtt://mqtt",
                 "MQTT_USER": "home",
                 "MQTT_PASS": "xa-QWClDjyeULyaeVNvjGPF6vzXYue4y",
-                "TV_IP": "10.0.90.212",
+                "TV_IP": "livingroom-tv",
     
                 "LOGGING_NAME": "lgtv2mqtt"
             }
