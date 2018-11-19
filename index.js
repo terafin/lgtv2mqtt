@@ -18,6 +18,7 @@ require('homeautomation-js-lib/mqtt_helpers.js')
 const tvMAC = process.env.TV_MAC
 const tvIP = process.env.TV_IP
 
+const mqttOptions = {retain: true, qos: 2}
 var topic_prefix = process.env.TOPIC_PREFIX
 
 if (_.isNil(topic_prefix)) {
@@ -31,10 +32,10 @@ logging.info(pkg.name + ' ' + pkg.version + ' starting')
 const mqtt = Mqtt.setupClient(function() {
 	mqttConnected = true
 
-	mqtt.publish(topic_prefix + '/connected', tvConnected ? '1' : '0', {retain: true})
+	mqtt.publish(topic_prefix + '/connected', tvConnected ? '1' : '0', mqttOptions)
 
 	logging.info('mqtt subscribe', topic_prefix + '/set/#')
-	mqtt.subscribe(topic_prefix + '/set/#')
+	mqtt.subscribe(topic_prefix + '/set/#', {qos: 2})
 }, function() {
 	if (mqttConnected) {
 		mqttConnected = false
@@ -156,21 +157,21 @@ lgtv.on('connect', () => {
 	lastError = null
 	tvConnected = true
 	logging.info('tv connected')
-	mqtt.publish(topic_prefix + '/connected', '1', {retain: true})
+	mqtt.publish(topic_prefix + '/connected', '1', mqttOptions)
 
 	lgtv.subscribe('ssap://audio/getVolume', (err, res) => {
 		logging.info('audio/getVolume', err, res)
 		if (res.changed.indexOf('volume') !== -1) {
-			mqtt.publish(topic_prefix + '/status/volume', String(res.volume), {retain: true})
+			mqtt.publish(topic_prefix + '/status/volume', String(res.volume), mqttOptions)
 		}
 		if (res.changed.indexOf('muted') !== -1) {
-			mqtt.publish(topic_prefix + '/status/mute', res.muted ? '1' : '0', {retain: true})
+			mqtt.publish(topic_prefix + '/status/mute', res.muted ? '1' : '0', mqttOptions)
 		}
 	})
 
 	lgtv.subscribe('ssap://com.webos.applicationManager/getForegroundAppInfo', (err, res) => {
 		logging.info('getForegroundAppInfo', err, res)
-		mqtt.publish(topic_prefix + '/status/foregroundApp', String(res.appId), {retain: true})
+		mqtt.publish(topic_prefix + '/status/foregroundApp', String(res.appId), mqttOptions)
 
 		if ( !_.isNil(res.appId) && res.appId.length > 0) {
 			tvOn = true
@@ -191,7 +192,7 @@ lgtv.on('connect', () => {
 							val: res.channelNumber,
 							lgtv: res
 						}
-						mqtt.publish(topic_prefix + '/status/currentChannel', JSON.stringify(msg), {retain: true})
+						mqtt.publish(topic_prefix + '/status/currentChannel', JSON.stringify(msg), mqttOptions)
 					})
 				}, 2500)
 			}
@@ -215,7 +216,7 @@ lgtv.on('close', () => {
 	lastError = null
 	tvConnected = false
 	logging.info('tv disconnected')
-	mqtt.publish(topic_prefix + '/connected', '0', {retain: true})
+	mqtt.publish(topic_prefix + '/connected', '0', mqttOptions)
 })
 
 lgtv.on('error', err => {
