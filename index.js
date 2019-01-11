@@ -12,6 +12,7 @@ let requestedTVOn = null
 let mqttConnected
 let tvConnected
 let lastError
+let foregroundApp = null
 
 require('homeautomation-js-lib/mqtt_helpers.js')
 
@@ -65,13 +66,7 @@ mqtt.on('error', err => {
 mqtt.on('message', (inTopic, inPayload) => {
 	var topic = inTopic
 	var payload = String(inPayload)
-	// try {
-	// 	payload = JSON.parse(payload)
-	// } catch (err) {
-	// 	logging.error('error on mqtt message JSON parsing: ' + err)
-	// }
-
-	logging.info('mqtt <', topic, payload)
+	logging.info('mqtt <' + topic + ':' + payload)
 
 	if (topic[0] == '/') { 
 		topic = topic.substring(1)
@@ -111,8 +106,11 @@ mqtt.on('message', (inTopic, inPayload) => {
 					logging.info('powerOn (isOn? ' + tvOn + ')')
 					wol.wake(tvMAC, function(err, res) {
 						logging.info('WOL: ' + res)
-						tvOn = true
 						requestedTVOn = true
+						if ( foregroundApp == null ) {
+							logging.info('lg > ssap://system/turnOff (to turn it on...)')
+							lgtv.request('ssap://system/turnOff', null, null) 					
+						}
 					})
 
 					break
@@ -170,8 +168,10 @@ lgtv.on('connect', () => {
 
 		if ( !_.isNil(res.appId) && res.appId.length > 0) {
 			tvOn = true
+			foregroundApp = res.appId
 		} else {
 			tvOn = false
+			foregroundApp = null
 		}
 
 		if (res.appId === 'com.webos.app.livetv') {
