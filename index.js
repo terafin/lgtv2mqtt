@@ -65,13 +65,13 @@ mqtt.on('error', err => {
 mqtt.on('message', (inTopic, inPayload) => {
 	var topic = inTopic
 	var payload = String(inPayload)
-	try {
-		payload = JSON.parse(payload)
-	} catch (err) {
-		logging.error('error on mqtt message JSON parsing: ' + err)
-	}
+	// try {
+	// 	payload = JSON.parse(payload)
+	// } catch (err) {
+	// 	logging.error('error on mqtt message JSON parsing: ' + err)
+	// }
 
-	logging.debug('mqtt <', topic, payload)
+	logging.info('mqtt <', topic, payload)
 
 	if (topic[0] == '/') { 
 		topic = topic.substring(1)
@@ -115,11 +115,6 @@ mqtt.on('message', (inTopic, inPayload) => {
 						requestedTVOn = true
 					})
 
-					// if ( !tvOn ) { 
-					// 	logging.info('lg > ssap://system/turnOff')
-					// 	lgtv.request('ssap://system/turnOff', null, null) 
-					// 	tvOn = true
-					// }
 					break
 
 				case 'powerOff':
@@ -209,7 +204,7 @@ lgtv.on('connect', () => {
 })
 
 lgtv.on('connecting', host => {
-	logging.debug('tv trying to connect', host)
+	logging.info('tv trying to connect', host)
 })
 
 lgtv.on('close', () => {
