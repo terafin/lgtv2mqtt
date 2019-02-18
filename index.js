@@ -217,7 +217,7 @@ lgtv.on('close', () => {
 lgtv.on('error', err => {
 	const str = String(err)
 	if (str !== lastError) {
-		logging.error('tv', str)
+		logging.error('tv error: ' + str)
 	}
 	lastError = str
 })
