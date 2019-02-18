@@ -23,7 +23,7 @@ const mqttOptions = {retain: true, qos: 2}
 var topic_prefix = process.env.TOPIC_PREFIX
 
 if (_.isNil(topic_prefix)) {
-	logging.warn('TOPIC_PREFIX not set, not starting')
+	logging.error('TOPIC_PREFIX not set, not starting')
 	process.abort()
 }
 
@@ -60,7 +60,7 @@ const lgtv = new Lgtv({
 })
 
 mqtt.on('error', err => {
-	logging.error('mqtt', err)
+	logging.error('mqtt: ' + err)
 })
 
 mqtt.on('message', (inTopic, inPayload) => {
