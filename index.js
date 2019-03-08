@@ -19,7 +19,7 @@ require('homeautomation-js-lib/mqtt_helpers.js')
 const tvMAC = process.env.TV_MAC
 const tvIP = process.env.TV_IP
 
-const mqttOptions = {retain: true, qos: 2}
+const mqttOptions = {retain: true, qos: 1}
 var topic_prefix = process.env.TOPIC_PREFIX
 
 if (_.isNil(topic_prefix)) {
