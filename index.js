@@ -36,7 +36,7 @@ const mqtt = Mqtt.setupClient(function() {
 	mqtt.publish(topic_prefix + '/connected', tvConnected ? '1' : '0', mqttOptions)
 
 	logging.info('mqtt subscribe', topic_prefix + '/set/#')
-	mqtt.subscribe(topic_prefix + '/set/#', {qos: 2})
+	mqtt.subscribe(topic_prefix + '/set/#', {qos: 1})
 }, function() {
 	if (mqttConnected) {
 		mqttConnected = false
