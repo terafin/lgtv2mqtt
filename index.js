@@ -56,7 +56,7 @@ const powerOff = function() {
 
 const lgtv = new Lgtv({
 	url: 'ws://' + tvIP + ':3000',
-	reconnect: 5000
+	reconnect: 1000
 })
 
 mqtt.on('error', err => {
