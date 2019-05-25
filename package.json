@@ -36,7 +36,7 @@
   },
   "homepage": "https://github.com/hobbyquaker/lgtv2mqtt",
   "dependencies": {
-    "homeautomation-js-lib": "git://github.com/terafin/homeautomation-js-lib.git",
+    "homeautomation-js-lib": "git+https://gitlab.siliconspirit.net/home/homeautomation-js-lib.git",
     "lgtv2": "latest",
     "mqtt": "latest",
     "lodash": "latest",

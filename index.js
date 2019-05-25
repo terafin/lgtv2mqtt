@@ -6,6 +6,7 @@ const pkg = require('./package.json')
 const _ = require('lodash')
 const logging = require('homeautomation-js-lib/logging.js')
 const wol = require('wol')
+const mqtt_helpers = require('homeautomation-js-lib/mqtt_helpers.js')
 
 let tvOn
 let requestedTVOn = null
@@ -13,8 +14,6 @@ let mqttConnected
 let tvConnected
 let lastError
 let foregroundApp = null
-
-require('homeautomation-js-lib/mqtt_helpers.js')
 
 const tvMAC = process.env.TV_MAC
 const tvIP = process.env.TV_IP
@@ -30,7 +29,7 @@ if (_.isNil(topic_prefix)) {
 
 logging.info(pkg.name + ' ' + pkg.version + ' starting')
 
-const mqtt = Mqtt.setupClient(function() {
+const mqtt = mqtt_helpers.setupClient(function() {
 	mqttConnected = true
 
 	mqtt.publish(topic_prefix + '/connected', tvConnected ? '1' : '0', mqttOptions)
