@@ -1,5 +1,8 @@
 name: Build & Deploy
-on: [push]
+on: 
+  push:
+    branches:
+      - master
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,4 +17,4 @@ jobs:
     - name: Deploy
       uses: wei/curl@v1
       with:
-        args: -H "X-Docker-Token:${{ secrets.WEBHOOK_AUTH_TOKEN }}"  -X GET "${{ secrets.WEBHOOK_URL }}?DOCKER_SERVICE_NAME=automation_${{ secrets.PROJECT_NAME }}&DOCKER_IMAGE_PREFIX=${{ secrets.DOCKER_USERNAME }}&DOCKER_IMAGE_NAME=${{ secrets.PROJECT_NAME }}&DOCKER_IMAGE_TAG=${{ secrets.DOCKER_IMAGE_TAG }}"
+        args: -H "X-Docker-Token:${{ secrets.WEBHOOK_AUTH_TOKEN }}"  -X GET "${{ secrets.WEBHOOK_URL }}?DOCKER_SERVICE_NAME=automation_${{ secrets.PROJECT_NAME }}&DOCKER_IMAGE_PREFIX=${{ secrets.DOCKER_USERNAME }}&DOCKER_IMAGE_NAME=${{ secrets.PROJECT_NAME }}&DOCKER_IMAGE_TAG=${{ secrets.DOCKER_IMAGE_TAG }}"qwewqeqwe
