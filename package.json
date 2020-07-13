@@ -1,54 +1,54 @@
 {
-    "name": "lgtv2mqtt",
-    "version": "1.1.1",
-    "description": "Interface between LG WebOS Smart TVs and MQTT",
-    "main": "index.js",
-    "preferGlobal": true,
-    "bin": "./index.js",
-    "engines": {
-        "node": ">=6.0.0"
-    },
-    "engineStrict": true,
-    "scripts": {
-        "start": "node index.js",
-        "test": "camo-purge ; xo"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/terafin/lgtv2mqtt"
-    },
-    "keywords": [
-        "mqtt",
-        "home",
-        "LG",
-        "smart",
-        "TV",
-        "remote",
-        "WebOS"
-    ],
-    "author": "Sebastian Raff <hobbyquaker@gmail.com> (https://hobbyquaker.github.io)",
-    "contributors": [
-        "forty2 (https://github.com/forty2/)"
-    ],
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/hobbyquaker/lgtv2mqtt/issues"
-    },
-    "homepage": "https://github.com/hobbyquaker/lgtv2mqtt",
-    "dependencies": {
-        "homeautomation-js-lib": "https://github.com/terafin/homeautomation-js-lib.git",
-        "lgtv2": "latest",
-        "lodash": "^4.17.19",
-        "mqtt": "latest",
-        "wol": "latest",
-        "yalm": "latest",
-        "yargs": "latest"
-    },
-    "xo": {
-        "space": 4
-    },
-    "devDependencies": {
-        "camo-purge": "latest",
-        "xo": "latest"
-    }
+  "name": "lgtv2mqtt",
+  "version": "1.1.1",
+  "description": "Interface between LG WebOS Smart TVs and MQTT",
+  "main": "index.js",
+  "preferGlobal": true,
+  "bin": "./index.js",
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "engineStrict": true,
+  "scripts": {
+    "start": "node index.js",
+    "test": "camo-purge ; xo"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/terafin/lgtv2mqtt"
+  },
+  "keywords": [
+    "mqtt",
+    "home",
+    "LG",
+    "smart",
+    "TV",
+    "remote",
+    "WebOS"
+  ],
+  "author": "Sebastian Raff <hobbyquaker@gmail.com> (https://hobbyquaker.github.io)",
+  "contributors": [
+    "forty2 (https://github.com/forty2/)"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hobbyquaker/lgtv2mqtt/issues"
+  },
+  "homepage": "https://github.com/hobbyquaker/lgtv2mqtt",
+  "dependencies": {
+    "homeautomation-js-lib": "https://github.com/terafin/homeautomation-js-lib.git",
+    "lgtv2": "latest",
+    "lodash": "^4.17.19",
+    "mqtt": "latest",
+    "wol": "latest",
+    "yalm": "latest",
+    "yargs": "latest"
+  },
+  "xo": {
+    "space": 4
+  },
+  "devDependencies": {
+    "camo-purge": "latest",
+    "xo": "latest"
+  }
 }
