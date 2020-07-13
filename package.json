@@ -38,7 +38,7 @@
     "dependencies": {
         "homeautomation-js-lib": "https://github.com/terafin/homeautomation-js-lib.git",
         "lgtv2": "latest",
-        "lodash": "^4.17.15",
+        "lodash": "^4.17.19",
         "mqtt": "latest",
         "wol": "latest",
         "yalm": "latest",
