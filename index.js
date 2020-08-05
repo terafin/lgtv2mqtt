@@ -48,6 +48,19 @@ const powerOff = function() {
     lgtv.request('ssap://system/turnOff', null, null)
 }
 
+const powerOn = function () {
+    logging.info('power_on')
+    wol.wake(tvMAC, {
+        address: broadcastIP
+    },function(err, res) {
+        logging.info('WOL: ' + res)
+        if (foregroundApp == null) {
+            logging.info('lg > ssap://system/turnOff (to turn it on...)')
+            lgtv.request('ssap://system/turnOff', null, null)
+        }
+    })
+}
+
 const lgtv = new Lgtv({
     url: 'ws://' + tvIP + ':3000',
     reconnect: 1000,
@@ -148,21 +161,12 @@ mqtt.on('message', (inTopic, inPayload) => {
                     sendPointerEvent('click')
                     break
 
-                case 'power_on':
-                    logging.info('power_on')
-                    wol.wake(tvMAC, {
-                        address: broadcastIP
-                    },function(err, res) {
-                        logging.info('WOL: ' + res)
-                        if (foregroundApp == null) {
-                            logging.info('lg > ssap://system/turnOff (to turn it on...)')
-                            lgtv.request('ssap://system/turnOff', null, null)
-                        }
-                    })
-                    break
-
-                case 'power_off':
-                    powerOff()
+                case 'power':
+                    if (Boolean(!(payload === 'false' || payload === '0'))) {
+                        powerOn()
+                    } else {
+                        powerOff()
+                    }
                     break
 
                 case 'button':

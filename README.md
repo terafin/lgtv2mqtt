@@ -117,11 +117,9 @@ Open URL within browser.
 #### lgtv/set/open_max 
 Open URL within browser and maximise the window.     
 
-#### lgtv/set/power_on 
-Power the TV ON, using Wake on Lan, must set Environment Variables: BROADCAST_IP and TV_MAC                    
-                    
-#### lgtv/set/power_off 
-Power the TV OFF                               
+#### lgtv/set/power
+Payload '1' or 'true': Power ON, using Wake on Lan, must set Environment Variables: BROADCAST_IP and TV_MAC  
+Payload '0' or 'false': Power OFF                           
 
 ### topics published by lgtv2mqtt
 
