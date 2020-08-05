@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  lgtv2mqtt:
+    image: uilton/lgtv2mqtt
+    restart: unless-stopped
+    environment:
+      - TV_MAC=60:AB:14:C5:CA:4E
+      - TV_IP=10.0.0.118
+      - BROADCAST_IP=$WOL_BROADCAST_ADDR
+      - TOPIC_PREFIX=lgtv
+      - MQTT_HOST=$MQ_HOST
+      - MQTT_NAME=lgtv2mqtt
+      - MQTT_USER=$MQ_USER
+      - MQTT_PASS=$MQ_PASS
+    volumes:
+    - "A:\Data\lgkey:/usr/node_app/lgkey"

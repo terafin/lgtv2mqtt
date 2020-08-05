@@ -1,15 +1,12 @@
 #!/usr/bin/env node
 
-const Mqtt = require('mqtt')
 const Lgtv = require('lgtv2')
 const pkg = require('./package.json')
 const _ = require('lodash')
-const logging = require('homeautomation-js-lib/logging.js')
+const logging = require('./logging.js')
 const wol = require('wol')
-const mqtt_helpers = require('homeautomation-js-lib/mqtt_helpers.js')
+const mqtt_helpers = require('./mqtt_helpers.js')
 
-let tvOn
-let requestedTVOn = null
 let mqttConnected
 let tvConnected
 let lastError
@@ -17,6 +14,7 @@ let foregroundApp = null
 
 const tvMAC = process.env.TV_MAC
 const tvIP = process.env.TV_IP
+const broadcastIP = process.env.BROADCAST_IP
 
 const mqttOptions = { retain: true, qos: 1 }
 var topic_prefix = process.env.TOPIC_PREFIX
@@ -44,18 +42,15 @@ const mqtt = mqtt_helpers.setupClient(function() {
 })
 
 const powerOff = function() {
-    logging.info('powerOff (isOn? ' + tvOn + ')')
-    if (tvOn) {
-        logging.info('lg > ssap://system/turnOff')
-        lgtv.request('ssap://system/turnOff', null, null)
-        tvOn = false
-        requestedTVOn = false
-    }
+    logging.info('powerOff')
+    logging.info('lg > ssap://system/turnOff')
+    lgtv.request('ssap://system/turnOff', null, null)
 }
 
 const lgtv = new Lgtv({
     url: 'ws://' + tvIP + ':3000',
-    reconnect: 1000
+    reconnect: 1000,
+    keyFile: ('/usr/node_app/lgkey/keyfile-') + tvIP.replace(/[a-z]+:\/\/([0-9a-zA-Z-_.]+):[0-9]+/, '$1')
 })
 
 mqtt.on('error', err => {
@@ -79,16 +74,13 @@ mqtt.on('message', (inTopic, inPayload) => {
                 case 'toast':
                     lgtv.request('ssap://system.notifications/createToast', { message: String(payload) })
                     break
+
                 case 'volume':
                     lgtv.request('ssap://audio/setVolume', { volume: parseInt(payload, 10) })
                     break
+
                 case 'mute':
-                    if (payload === 'true') {
-                        payload = true
-                    }
-                    if (payload === 'false') {
-                        payload = false
-                    }
+                    payload = !(payload === 'false' || payload === '0')
                     lgtv.request('ssap://audio/setMute', { mute: Boolean(payload) })
                     break
 
@@ -102,16 +94,16 @@ mqtt.on('message', (inTopic, inPayload) => {
                     break
 
                 case 'powerOn':
-                    logging.info('powerOn (isOn? ' + tvOn + ')')
-                    wol.wake(tvMAC, function(err, res) {
+                    logging.info('powerOn')
+                    wol.wake(tvMAC, {
+                        address: broadcastIP
+                    },function(err, res) {
                         logging.info('WOL: ' + res)
-                        requestedTVOn = true
                         if (foregroundApp == null) {
                             logging.info('lg > ssap://system/turnOff (to turn it on...)')
                             lgtv.request('ssap://system/turnOff', null, null)
                         }
                     })
-
                     break
 
                 case 'powerOff':
@@ -122,10 +114,7 @@ mqtt.on('message', (inTopic, inPayload) => {
                     /*
                      * Buttons that are known to work:
                      *    MUTE, RED, GREEN, YELLOW, BLUE, HOME, MENU, VOLUMEUP, VOLUMEDOWN,
-                     *    CC, BACK, UP, DOWN, LEFT, ENTER, DASH, 0-9, EXIT
-                     *
-                     * Probably also (but I don't have the facility to test them):
-                     *    CHANNELUP, CHANNELDOWN
+                     *    CC, BACK, UP, DOWN, LEFT, ENTER, DASH, 0-9, EXIT, CHANNELUP, CHANNELDOWN
                      */
                     sendPointerEvent('button', { name: (String(payload)).toUpperCase() })
                     break
@@ -144,7 +133,6 @@ lgtv.on('prompt', () => {
 })
 
 lgtv.on('connect', () => {
-    tvOn = true
     let channelsSubscribed = false
     lastError = null
     tvConnected = true
@@ -166,10 +154,8 @@ lgtv.on('connect', () => {
         mqtt.publish(topic_prefix + '/status/foregroundApp', String(res.appId), mqttOptions)
 
         if (!_.isNil(res.appId) && res.appId.length > 0) {
-            tvOn = true
             foregroundApp = res.appId
         } else {
-            tvOn = false
             foregroundApp = null
         }
 
@@ -196,10 +182,6 @@ lgtv.on('connect', () => {
     lgtv.subscribe('ssap://tv/getExternalInputList', function(err, res) {
         logging.info('getExternalInputList', err, res)
     })
-
-    if (requestedTVOn == false) {
-        powerOff()
-    }
 })
 
 lgtv.on('connecting', host => {
