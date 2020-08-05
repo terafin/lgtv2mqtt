@@ -47,6 +47,14 @@ Show a Popup Message. Send Message as plain payload string.
 
 Lauch an app. Send AppId as plain payload string.
 
+#### lgtv/set/system_launch
+
+Same as lgtv/set/launch, but you can send full json as payload
+
+#### lgtv/set/am_launch_json
+
+Same as lgtv/set/system_launch, but launch with applicationManager instead of system.launcher
+
 #### lgtv/set/media.controls/play
 
 #### lgtv/set/media.controls/pause
@@ -67,7 +75,7 @@ Lauch an app. Send AppId as plain payload string.
 
 Send coordinates as JSON with attributes dx and dy of type number
 
-Example payload: ```{dx: 100, dy: 0}```
+Example payload: ```{"dx": 100, "dy": 0}```
 
 #### lgtv/set/scroll
 
@@ -85,8 +93,35 @@ channelup, channeldown, record
                     
 #### lgtv/set/youtube 
 
-Youtube video ID as payload. Runs youtube app and opens video.                    
+Youtube video ID as payload. Runs youtube app and opens video. If the payload is empty, just launch youtube app.       
                     
+#### lgtv/set/netflix 
+
+Netflix video ID as payload. Runs netflix app and opens video. If the payload is empty, just launch Netflix app.       
+                    
+#### lgtv/set/amazon_prime 
+
+Just launch Amazon Prime app, not sure how to open a content directly on it yet.
+
+#### lgtv/set/plex 
+
+Just launch Plex app, not sure how to open a content directly on it yet.        
+
+#### lgtv/set/web_video_caster 
+
+Just launch Web Video Caster app, not sure how to open a content directly on it yet.        
+
+#### lgtv/set/open 
+Open URL within browser.
+
+#### lgtv/set/open_max 
+Open URL within browser and maximise the window.     
+
+#### lgtv/set/power_on 
+Power the TV ON, using Wake on Lan, must set Environment Variables: BROADCAST_IP and TV_MAC                    
+                    
+#### lgtv/set/power_off 
+Power the TV OFF                               
 
 ### topics published by lgtv2mqtt
 

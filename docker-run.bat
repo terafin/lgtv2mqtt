@@ -8,5 +8,7 @@ docker run -it --rm ^
     -e MQTT_NAME=lgtv2mqtt ^
     -e MQTT_USER=%MQ_USER% ^
     -e MQTT_PASS=%MQ_PASS% ^
+    -e CLIENT_KEY_PATH=/usr/node_app/lgkey/ ^
+    -e LOG_PATH=/var/log ^
     -v "A:\Data\lgkey:/usr/node_app/lgkey" ^
     uilton/lgtv2mqtt:latest

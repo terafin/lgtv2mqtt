@@ -27,7 +27,7 @@ const timezoned = () => {
 		timeZone: process.env.TZ
 	})
 }
-  
+
 const logFormat = function(shouldColor) {
 	if (shouldColor) {
 		return winston.format.combine(
@@ -56,7 +56,7 @@ const canWrite = function(directory) {
 }
 
 var dailyFileLogger = null
-const loggingPath = '/var/log'
+const loggingPath = process.env.LOG_PATH || '/var/log'
 
 if (!canWrite(loggingPath)) {
 	dailyFileLogger = new (winston.transports.DailyRotateFile)({
