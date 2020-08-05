@@ -211,8 +211,10 @@ mqtt.on('message', (inTopic, inPayload) => {
                     break
 
                 default:
-                    logging.info(`lg > 'ssap://${parts[2]}:${payload || 'null'}`)
-                    lgtv.request('ssap://' + topic.replace(topic_prefix + '/set/', ''), payload || null)
+                    const path = topic.replace(topic_prefix + '/set/', '')
+                    const jsonPayload = !!payload ? JSON.parse(payload) : null
+                    logging.info(`lg > 'ssap://${path}:${payload || 'null'}`)
+                    lgtv.request(`ssap://${path}`, jsonPayload)
             }
             break
         default:
