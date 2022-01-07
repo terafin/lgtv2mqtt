@@ -9,23 +9,19 @@
 
 > Interface between LG WebOS Smart TVs and MQTT 📺
 
-
 ### Getting started
 
-* TV configuration
+-   TV configuration
 
 You need to allow "LG Connect Apps" on your TV - see http://www.lg.com/uk/support/product-help/CT00008334-1437131798537-others
 
+-   Install
 
-* Install
+`npm install -g lgtv2mqtt`
 
-```npm install -g lgtv2mqtt```
+-   Start
 
-
-* Start 
-
-```lgtv2mqtt --help```  
-
+`lgtv2mqtt --help`
 
 ### Topics subscribed by lgtv2mqtt
 
@@ -47,6 +43,14 @@ Show a Popup Message. Send Message as plain payload string.
 
 Lauch an app. Send AppId as plain payload string.
 
+#### lgtv/set/system_launch
+
+Same as lgtv/set/launch, but you can send full json as payload
+
+#### lgtv/set/am_launch_json
+
+Same as lgtv/set/system_launch, but launch with applicationManager instead of system.launcher
+
 #### lgtv/set/media.controls/play
 
 #### lgtv/set/media.controls/pause
@@ -67,7 +71,7 @@ Lauch an app. Send AppId as plain payload string.
 
 Send coordinates as JSON with attributes dx and dy of type number
 
-Example payload: ```{dx: 100, dy: 0}```
+Example payload: `{"dx": 100, "dy": 0}`
 
 #### lgtv/set/scroll
 
@@ -82,11 +86,39 @@ Send button as plain string payload
 Buttons that are known to work:
 MUTE, RED, GREEN, YELLOW, BLUE, HOME, MENU, VOLUMEUP, VOLUMEDOWN, CC, BACK, UP, DOWN, LEFT, ENTER, DASH, 0-9, EXIT,
 channelup, channeldown, record
-                    
-#### lgtv/set/youtube 
 
-Youtube video ID as payload. Runs youtube app and opens video.                    
-                    
+#### lgtv/set/youtube
+
+Youtube video ID as payload. Runs youtube app and opens video. If the payload is empty, just launch youtube app.
+
+#### lgtv/set/netflix
+
+Netflix video ID as payload. Runs netflix app and opens video. If the payload is empty, just launch Netflix app.
+
+#### lgtv/set/amazon_prime
+
+Just launch Amazon Prime app, not sure how to open a content directly on it yet.
+
+#### lgtv/set/plex
+
+Just launch Plex app, not sure how to open a content directly on it yet.
+
+#### lgtv/set/web_video_caster
+
+Just launch Web Video Caster app, not sure how to open a content directly on it yet.
+
+#### lgtv/set/open
+
+Open URL within browser.
+
+#### lgtv/set/open_max
+
+Open URL within browser and maximise the window.
+
+#### lgtv/set/power
+
+Payload '1' or 'true': Power ON, using Wake on Lan, must set Environment Variables: BROADCAST_IP and TV_MAC  
+Payload '0' or 'false': Power OFF
 
 ### topics published by lgtv2mqtt
 
@@ -106,7 +138,6 @@ Reports which App is currently in foreground. (example Payloads: 'netflix', 'com
 
 Reports current channel if foregroundApp is 'com.webos.app.livetv'. Payload is a JSON String, property val contains the
 channelNumber, underneath 'lgtv' you will find more properties with detailed information.
-
 
 ## License
 
