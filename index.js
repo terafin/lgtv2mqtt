@@ -28,6 +28,7 @@ const tvOptions = {
 if (!_.isNil(tvClientKey)) {
     tvOptions['clientKey'] = tvClientKey
     tvOptions['saveKey'] = function(){}
+    logging.info("clientKey supplied externally")
 }
 
 const mqttOptions = { retain: true, qos: 1 }
