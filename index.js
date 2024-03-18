@@ -17,9 +17,20 @@ let foregroundApp = null
 
 const tvMAC = process.env.TV_MAC
 const tvIP = process.env.TV_IP
+const tvClientKey = process.env.TV_CLIENT_KEY
+const topic_prefix = process.env.TOPIC_PREFIX
+
+const tvOptions = {
+    url: 'ws://' + tvIP + ':3000',
+    reconnect: 1000
+}
+
+if (!_.isNil(tvClientKey)) {
+    tvOptions['clientKey'] = tvClientKey
+    tvOptions['saveKey'] = function(){}
+}
 
 const mqttOptions = { retain: true, qos: 1 }
-var topic_prefix = process.env.TOPIC_PREFIX
 
 if (_.isNil(topic_prefix)) {
     logging.error('TOPIC_PREFIX not set, not starting')
@@ -53,10 +64,7 @@ const powerOff = function() {
     }
 }
 
-const lgtv = new Lgtv({
-    url: 'ws://' + tvIP + ':3000',
-    reconnect: 1000
-})
+const lgtv = new Lgtv(tvOptions)
 
 mqtt.on('error', err => {
     logging.error('mqtt: ' + err)
