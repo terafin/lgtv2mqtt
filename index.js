@@ -162,11 +162,21 @@ lgtv.on('connect', () => {
 
     lgtv.subscribe('ssap://audio/getVolume', (err, res) => {
         logging.info('audio/getVolume', err, res)
-        if (res.changed.indexOf('volume') !== -1) {
-            mqtt.publish(topic_prefix + '/status/volume', String(res.volume), mqttOptions)
+        if (!_.isNil(res) && !_.isNil(res.changed)) {
+            if (res.changed.indexOf('volume') !== -1) {
+                mqtt.publish(topic_prefix + '/status/volume', String(res.volume), mqttOptions)
+            }
+            if (res.changed.indexOf('muted') !== -1) {
+                mqtt.publish(topic_prefix + '/status/mute', res.muted ? '1' : '0', mqttOptions)
+            }
         }
-        if (res.changed.indexOf('muted') !== -1) {
-            mqtt.publish(topic_prefix + '/status/mute', res.muted ? '1' : '0', mqttOptions)
+        if (!_.isNil(res) && !_.isNil(res.volumeStatus)) {
+            if (res.volumeStatus.indexOf('volume') !== -1) {
+                mqtt.publish(topic_prefix + '/status/volume', String(res.volume), mqttOptions)
+            }
+            if (res.volumeStatus.indexOf('muted') !== -1) {
+                mqtt.publish(topic_prefix + '/status/mute', res.muted ? '1' : '0', mqttOptions)
+            }
         }
     })
 
